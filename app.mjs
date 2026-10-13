@@ -1,4 +1,5 @@
 import { REVIEWED_ON, opportunities, estimateStudentBranchRebate, filterOpportunities } from "./opportunities.mjs";
+import { eventExamples, filterEventExamples } from "./events.mjs";
 
 const list = document.querySelector("#opportunity-list");
 const search = document.querySelector("#funding-search");
@@ -9,12 +10,16 @@ const catalogStatus = document.querySelector("#catalog-status");
 const catalogHeading = document.querySelector("#catalog-heading");
 const catalogResults = document.querySelector("#catalog-results");
 const buttons = [...document.querySelectorAll("[data-filter]")];
+const eventGrid = document.querySelector("#event-grid");
+const eventCount = document.querySelector("#events-count");
+const eventFilterButtons = [...document.querySelectorAll("[data-event-filter]")];
 const menuButton = document.querySelector(".menu-toggle");
 const menu = document.querySelector("#site-nav");
 let activeCategory = "all";
 let catalogTimer;
 let catalogRequest;
 let lastCatalogEntries = [];
+let activeEventCategory = "all";
 
 const statusLabels = { open: "Open at last check", closed: "Closed in 2026", recurring: "Annual cycle", check: "Check next cycle" };
 
@@ -44,6 +49,32 @@ function renderOpportunity(item) {
   source.href = item.source;
   source.querySelector("span").textContent = item.sourceLabel;
   return card;
+}
+
+function renderEventExample(item) {
+  const card = document.createElement("article");
+  card.className = "event-card";
+  card.setAttribute("role", "listitem");
+  card.innerHTML = `<div class="event-card-top"><span class="event-format"></span><span class="event-edition"></span></div>
+    <h3 class="event-title"></h3><p class="event-organizers"></p><p class="event-summary"></p>
+    <div class="event-takeaway"><strong>Idea to borrow</strong><p></p></div>
+    <a class="event-source" target="_blank" rel="noopener noreferrer"><span></span><span aria-hidden="true">↗</span></a>`;
+  card.querySelector(".event-format").textContent = item.format;
+  card.querySelector(".event-edition").textContent = item.edition;
+  card.querySelector(".event-title").textContent = item.title;
+  card.querySelector(".event-organizers").textContent = item.organizers;
+  card.querySelector(".event-summary").textContent = item.summary;
+  card.querySelector(".event-takeaway p").textContent = item.takeaway;
+  const source = card.querySelector(".event-source");
+  source.href = item.source;
+  source.querySelector("span").textContent = item.sourceLabel;
+  return card;
+}
+
+function updateEventExamples() {
+  const filtered = filterEventExamples(eventExamples, activeEventCategory);
+  eventGrid.replaceChildren(...filtered.map(renderEventExample));
+  eventCount.textContent = `${filtered.length} of ${eventExamples.length} documented examples`;
 }
 
 function safeText(markup) {
@@ -211,6 +242,16 @@ travelOnly.addEventListener("change", () => {
   scheduleCatalogSearch();
 });
 
+eventFilterButtons.forEach((button) => button.addEventListener("click", () => {
+  activeEventCategory = button.dataset.eventFilter;
+  eventFilterButtons.forEach((candidate) => {
+    const active = candidate === button;
+    candidate.classList.toggle("is-active", active);
+    candidate.setAttribute("aria-pressed", String(active));
+  });
+  updateEventExamples();
+}));
+
 menuButton.addEventListener("click", () => {
   const expanded = menuButton.getAttribute("aria-expanded") === "true";
   menuButton.setAttribute("aria-expanded", String(!expanded));
@@ -241,3 +282,4 @@ if (ageDays > 30) {
 }
 
 updateList();
+updateEventExamples();
