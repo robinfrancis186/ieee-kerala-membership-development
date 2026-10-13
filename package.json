@@ -1,0 +1,9 @@
+{
+  "name": "ieee-kerala-membership-development",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 5176",
+    "test": "node --test"
+  }
+}

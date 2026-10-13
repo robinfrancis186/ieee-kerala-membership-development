@@ -1,0 +1,4 @@
+.env.local
+output/imagegen/
+node_modules/
+.DS_Store
