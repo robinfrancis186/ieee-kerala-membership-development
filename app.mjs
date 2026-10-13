@@ -1,10 +1,12 @@
 import { REVIEWED_ON, opportunities, estimateStudentBranchRebate, filterOpportunities } from "./opportunities.mjs";
 import { eventExamples, filterEventExamples } from "./events.mjs";
 
+const root = document.documentElement;
 const list = document.querySelector("#opportunity-list");
 const search = document.querySelector("#funding-search");
 const count = document.querySelector("#result-count");
 const empty = document.querySelector("#empty-state");
+const moreButton = document.querySelector("#show-more");
 const travelOnly = document.querySelector("#travel-only");
 const catalogStatus = document.querySelector("#catalog-status");
 const catalogHeading = document.querySelector("#catalog-heading");
@@ -12,31 +14,47 @@ const catalogResults = document.querySelector("#catalog-results");
 const buttons = [...document.querySelectorAll("[data-filter]")];
 const eventGrid = document.querySelector("#event-grid");
 const eventCount = document.querySelector("#events-count");
+const moreEventsButton = document.querySelector("#show-more-events");
 const eventFilterButtons = [...document.querySelectorAll("[data-event-filter]")];
+const header = document.querySelector(".site-header");
 const menuButton = document.querySelector(".menu-toggle");
 const menu = document.querySelector("#site-nav");
+const themeToggle = document.querySelector(".theme-toggle");
+const themeColor = document.querySelector('meta[name="theme-color"]');
+const progressBar = document.querySelector(".scroll-progress span");
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
+const compact = window.matchMedia("(max-width: 680px)");
+const previewCount = () => (compact.matches ? 4 : 9);
+const eventPreviewCount = () => (compact.matches ? 4 : eventExamples.length);
+const tones = ["blue", "teal", "amber", "coral"];
 let activeCategory = "all";
+let showAll = false;
+let showAllEvents = false;
 let catalogTimer;
 let catalogRequest;
 let lastCatalogEntries = [];
 let activeEventCategory = "all";
 
 const statusLabels = { open: "Open at last check", closed: "Closed in 2026", recurring: "Annual cycle", check: "Check next cycle" };
+const eventCategoryLabels = { "student-branch": "Student Branch", society: "Society chapter", "kerala-wide": "Kerala-wide" };
+const icon = (name) => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
 
-function renderOpportunity(item) {
+function renderOpportunity(item, index) {
   const status = item.status;
   const card = document.createElement("article");
-  card.className = "opportunity-row";
+  card.className = "opportunity-card";
   card.setAttribute("role", "listitem");
+  card.style.setProperty("--i", Math.min(index, 9));
   card.innerHTML = `
-    <div class="opp-primary">
-      <h3 class="opp-title"></h3><p class="opp-type"></p>
-    </div>
-    <div><span class="opp-cell-label">Status</span><span class="opp-status status-${status}"></span></div>
-    <div><span class="opp-cell-label">Amount</span><span class="opp-amount"></span></div>
-    <div><span class="opp-cell-label">Opening, closing, cycle</span><span class="opp-window"></span></div>
-    <div><span class="opp-cell-label">Best fit and eligibility</span><p class="opp-fit"></p><small class="opp-eligibility"></small></div>
-    <a class="opp-source" target="_blank" rel="noopener noreferrer"><span></span><span aria-hidden="true">↗</span></a>`;
+    <div class="opp-top"><span class="opp-status status-${status}"></span>${item.travel ? `<span class="opp-tag">Travel</span>` : ""}</div>
+    <div class="opp-primary"><h3 class="opp-title"></h3><p class="opp-type"></p></div>
+    <dl class="opp-facts">
+      <div><dt>Amount</dt><dd class="opp-amount"></dd></div>
+      <div><dt>Opening, closing, cycle</dt><dd class="opp-window"></dd></div>
+    </dl>
+    <div><span class="opp-label">Best fit and eligibility</span><p class="opp-fit"></p><small class="opp-eligibility"></small></div>
+    <a class="opp-source" target="_blank" rel="noopener noreferrer"><span></span>${icon("arrow-up-right")}</a>`;
   card.querySelector(".opp-title").textContent = item.title;
   card.querySelector(".opp-type").textContent = item.type;
   card.querySelector(".opp-type").textContent += ` · ${item.organization}`;
@@ -51,20 +69,26 @@ function renderOpportunity(item) {
   return card;
 }
 
-function renderEventExample(item) {
+function renderEventExample(item, index) {
   const card = document.createElement("article");
-  card.className = "event-card";
+  card.className = `event-card tone-${tones[index % tones.length]}`;
   card.setAttribute("role", "listitem");
+  card.style.setProperty("--i", Math.min(index, 9));
   card.innerHTML = `<div class="event-card-top"><span class="event-format"></span><span class="event-edition"></span></div>
     <h3 class="event-title"></h3><p class="event-organizers"></p><p class="event-summary"></p>
-    <div class="event-takeaway"><strong>Idea to borrow</strong><p></p></div>
-    <a class="event-source" target="_blank" rel="noopener noreferrer"><span></span><span aria-hidden="true">↗</span></a>`;
+    <div class="event-takeaway"><strong>${icon("bulb")}Idea to borrow</strong><p></p></div>
+    <div class="event-card-bottom"><div class="event-tags"></div><a class="event-source" target="_blank" rel="noopener noreferrer"><span></span>${icon("arrow-up-right")}</a></div>`;
   card.querySelector(".event-format").textContent = item.format;
   card.querySelector(".event-edition").textContent = item.edition;
   card.querySelector(".event-title").textContent = item.title;
   card.querySelector(".event-organizers").textContent = item.organizers;
   card.querySelector(".event-summary").textContent = item.summary;
   card.querySelector(".event-takeaway p").textContent = item.takeaway;
+  card.querySelector(".event-tags").append(...item.categories.filter((category) => eventCategoryLabels[category]).map((category) => {
+    const tag = document.createElement("span");
+    tag.textContent = eventCategoryLabels[category];
+    return tag;
+  }));
   const source = card.querySelector(".event-source");
   source.href = item.source;
   source.querySelector("span").textContent = item.sourceLabel;
@@ -73,8 +97,14 @@ function renderEventExample(item) {
 
 function updateEventExamples() {
   const filtered = filterEventExamples(eventExamples, activeEventCategory);
-  eventGrid.replaceChildren(...filtered.map(renderEventExample));
-  eventCount.textContent = `${filtered.length} of ${eventExamples.length} documented examples`;
+  const visible = showAllEvents ? filtered : filtered.slice(0, eventPreviewCount());
+  eventGrid.replaceChildren(...visible.map(renderEventExample));
+  eventCount.textContent = visible.length < filtered.length
+    ? `Showing ${visible.length} of ${filtered.length} documented examples`
+    : `${filtered.length} of ${eventExamples.length} documented examples`;
+  moreEventsButton.hidden = filtered.length <= eventPreviewCount();
+  moreEventsButton.textContent = showAllEvents ? "Show fewer" : `Show all ${filtered.length} examples`;
+  moreEventsButton.setAttribute("aria-expanded", String(showAllEvents));
 }
 
 function safeText(markup) {
@@ -127,9 +157,15 @@ function renderCatalogEntries(entries, visibleLocal) {
 
 function updateList() {
   const filtered = filterOpportunities(opportunities, { category: activeCategory, query: search.value, travelOnly: travelOnly.checked });
-  list.replaceChildren(...filtered.map(renderOpportunity));
-  count.textContent = `${filtered.length} of ${opportunities.length} reviewed opportunities shown`;
+  const visible = showAll ? filtered : filtered.slice(0, previewCount());
+  list.replaceChildren(...visible.map(renderOpportunity));
+  count.textContent = visible.length < filtered.length
+    ? `Showing ${visible.length} of ${filtered.length} ${filtered.length === opportunities.length ? "reviewed" : "matching"} opportunities`
+    : `${filtered.length} of ${opportunities.length} reviewed opportunities shown`;
   empty.hidden = filtered.length > 0;
+  moreButton.hidden = filtered.length <= previewCount();
+  moreButton.textContent = showAll ? "Show fewer" : `Show all ${filtered.length} opportunities`;
+  moreButton.setAttribute("aria-expanded", String(showAll));
   renderCatalogEntries(lastCatalogEntries, filtered);
 }
 
@@ -181,40 +217,60 @@ function scheduleCatalogSearch() {
 }
 
 const branchMembers = document.querySelector("#branch-members");
+const rebateOutput = document.querySelector("#rebate-output");
+const rebateFigure = document.querySelector("#rebate-figure");
+const rebateAmount = document.querySelector("#rebate-amount");
+const rebateBreakdown = document.querySelector("#rebate-breakdown");
 const rebateResult = document.querySelector("#rebate-result");
 const readiness = ["#plan-submitted", "#activities-reported", "#officers-current"].map((selector) => document.querySelector(selector));
+const readinessMeter = document.querySelector("#readiness-meter");
 const coreDues = document.querySelector("#core-dues");
 const poolResult = document.querySelector("#pool-result");
 const money = (amount) => `US$${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+function showRebate(state, message, estimate = null, members = 0) {
+  rebateOutput.dataset.state = state;
+  rebateResult.textContent = message;
+  rebateFigure.hidden = estimate === null;
+  if (estimate === null) return;
+  rebateAmount.textContent = money(estimate);
+  rebateBreakdown.textContent = `US$${estimate - members * 2} allotment + ${members.toLocaleString("en-US")} × US$2`;
+}
+
 function updateRebateEstimate() {
+  const complete = readiness.filter((checkbox) => checkbox.checked).length;
+  readinessMeter.querySelector(".meter-label").textContent = `${complete} of ${readiness.length} checks complete`;
+  readinessMeter.querySelectorAll(".meter-bar i").forEach((segment, index) => segment.classList.toggle("is-on", index < complete));
   if (branchMembers.value === "") {
-    rebateResult.textContent = "Enter the prior-year member count to see a planning estimate.";
+    showRebate("empty", "Enter the prior-year member count to see a planning estimate.");
     return;
   }
   const countValue = Number(branchMembers.value);
   const estimate = estimateStudentBranchRebate(countValue);
   if (!Number.isInteger(countValue) || countValue > 100000) {
-    rebateResult.textContent = "Enter a whole-number member count between 12 and 100,000.";
+    showRebate("error", "Enter a whole-number member count between 12 and 100,000.");
   } else if (estimate === null) {
-    rebateResult.textContent = "The published Student Branch minimum is 12 Student or Graduate Student members. No rebate estimate is shown below that threshold.";
-  } else if (readiness.every((checkbox) => checkbox.checked)) {
-    rebateResult.textContent = `Formula-based estimate: ${money(estimate)}. The Section must confirm the branch's good standing and actual payment.`;
+    showRebate("error", "The published Student Branch minimum is 12 Student or Graduate Student members. No rebate estimate is shown below that threshold.");
+  } else if (complete === readiness.length) {
+    showRebate("ready", `Formula-based estimate: ${money(estimate)}. The Section must confirm the branch's good standing and actual payment.`, estimate, countValue);
   } else {
-    rebateResult.textContent = `Potential estimate if all reporting checks are complete: ${money(estimate)}. This is not a payable amount until the Section confirms eligibility.`;
+    showRebate("pending", `Potential estimate if all reporting checks are complete: ${money(estimate)}. This is not a payable amount until the Section confirms eligibility.`, estimate, countValue);
   }
 }
 
 function updatePoolEstimate() {
   if (coreDues.value === "") {
+    poolResult.dataset.state = "empty";
     poolResult.textContent = "Add core dues to see the illustrative 12% MGA pool share.";
     return;
   }
   const dues = Number(coreDues.value);
   if (!Number.isFinite(dues) || dues < 0) {
+    poolResult.dataset.state = "error";
     poolResult.textContent = "Enter a non-negative core IEEE dues amount.";
     return;
   }
+  poolResult.dataset.state = "filled";
   poolResult.textContent = `Illustrative 12% aggregate MGA allocation: ${money(dues * .12)}. This is not the amount paid to one Branch, Section, Council, or Region.`;
 }
 
@@ -222,15 +278,25 @@ branchMembers.addEventListener("input", updateRebateEstimate);
 readiness.forEach((checkbox) => checkbox.addEventListener("change", updateRebateEstimate));
 coreDues.addEventListener("input", updatePoolEstimate);
 
-buttons.forEach((button) => button.addEventListener("click", () => {
-  activeCategory = button.dataset.filter;
-  buttons.forEach((candidate) => {
-    const active = candidate === button;
-    candidate.classList.toggle("is-active", active);
-    candidate.setAttribute("aria-pressed", String(active));
+function addFilterCount(button, total) {
+  const badge = document.createElement("span");
+  badge.className = "filter-count";
+  badge.textContent = total;
+  button.append(" ", badge);
+}
+
+buttons.forEach((button) => {
+  addFilterCount(button, filterOpportunities(opportunities, { category: button.dataset.filter }).length);
+  button.addEventListener("click", () => {
+    activeCategory = button.dataset.filter;
+    buttons.forEach((candidate) => {
+      const active = candidate === button;
+      candidate.classList.toggle("is-active", active);
+      candidate.setAttribute("aria-pressed", String(active));
+    });
+    updateList();
   });
-  updateList();
-}));
+});
 search.addEventListener("input", () => {
   lastCatalogEntries = [];
   updateList();
@@ -241,16 +307,33 @@ travelOnly.addEventListener("change", () => {
   updateList();
   scheduleCatalogSearch();
 });
-
-eventFilterButtons.forEach((button) => button.addEventListener("click", () => {
-  activeEventCategory = button.dataset.eventFilter;
-  eventFilterButtons.forEach((candidate) => {
-    const active = candidate === button;
-    candidate.classList.toggle("is-active", active);
-    candidate.setAttribute("aria-pressed", String(active));
-  });
+moreButton.addEventListener("click", () => {
+  showAll = !showAll;
+  updateList();
+  if (!showAll) document.querySelector(".funding-tools").scrollIntoView({ block: "start" });
+});
+moreEventsButton.addEventListener("click", () => {
+  showAllEvents = !showAllEvents;
   updateEventExamples();
-}));
+  if (!showAllEvents) document.querySelector(".events-tools").scrollIntoView({ block: "start" });
+});
+compact.addEventListener("change", () => {
+  updateList();
+  updateEventExamples();
+});
+
+eventFilterButtons.forEach((button) => {
+  addFilterCount(button, filterEventExamples(eventExamples, button.dataset.eventFilter).length);
+  button.addEventListener("click", () => {
+    activeEventCategory = button.dataset.eventFilter;
+    eventFilterButtons.forEach((candidate) => {
+      const active = candidate === button;
+      candidate.classList.toggle("is-active", active);
+      candidate.setAttribute("aria-pressed", String(active));
+    });
+    updateEventExamples();
+  });
+});
 
 menuButton.addEventListener("click", () => {
   const expanded = menuButton.getAttribute("aria-expanded") === "true";
@@ -274,6 +357,93 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+function storedTheme() {
+  try {
+    return localStorage.getItem("theme");
+  } catch {
+    return null;
+  }
+}
+
+function applyTheme(theme) {
+  root.dataset.theme = theme;
+  themeToggle.setAttribute("aria-label", theme === "dark" ? "Switch to light theme" : "Switch to dark theme");
+  themeColor.content = theme === "dark" ? "#08101e" : "#f6f3ec";
+}
+
+themeToggle.addEventListener("click", () => {
+  const next = root.dataset.theme === "dark" ? "light" : "dark";
+  try {
+    localStorage.setItem("theme", next);
+  } catch {}
+  applyTheme(next);
+});
+systemDark.addEventListener("change", (event) => {
+  if (!storedTheme()) applyTheme(event.matches ? "dark" : "light");
+});
+applyTheme(root.dataset.theme === "dark" ? "dark" : "light");
+
+const sectionLinks = [...menu.querySelectorAll('a[href^="#"]')];
+const linkedSections = sectionLinks.map((link) => document.querySelector(link.hash));
+let scrollQueued = false;
+
+function updateScrollState() {
+  scrollQueued = false;
+  const scrollable = root.scrollHeight - window.innerHeight;
+  progressBar.style.transform = `scaleX(${scrollable > 0 ? Math.min(window.scrollY / scrollable, 1) : 0})`;
+  header.classList.toggle("is-scrolled", window.scrollY > 8);
+  const marker = window.innerHeight * .35;
+  let current = -1;
+  linkedSections.forEach((section, index) => {
+    if (section.getBoundingClientRect().top <= marker) current = index;
+  });
+  sectionLinks.forEach((link, index) => {
+    link.classList.toggle("is-current", index === current);
+    if (index === current) link.setAttribute("aria-current", "location");
+    else link.removeAttribute("aria-current");
+  });
+}
+
+function queueScrollState() {
+  if (scrollQueued) return;
+  scrollQueued = true;
+  requestAnimationFrame(updateScrollState);
+}
+
+window.addEventListener("scroll", queueScrollState, { passive: true });
+window.addEventListener("resize", queueScrollState);
+
+if ("IntersectionObserver" in window && !reducedMotion.matches) {
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-visible");
+      revealObserver.unobserve(entry.target);
+    });
+  }, { rootMargin: "0px 0px -6% 0px", threshold: .06 });
+  root.classList.add("reveal-ready");
+  document.querySelectorAll("[data-reveal], [data-reveal-group] > *").forEach((item) => revealObserver.observe(item));
+}
+
+const stats = {
+  opportunities: opportunities.length,
+  open: filterOpportunities(opportunities, { category: "open" }).length,
+  events: eventExamples.length,
+  days: 90
+};
+document.querySelectorAll("[data-stat]").forEach((node) => {
+  const target = stats[node.dataset.stat];
+  node.textContent = target;
+  if (reducedMotion.matches) return;
+  const started = performance.now();
+  const tick = (now) => {
+    const progress = Math.min((now - started) / 1100, 1);
+    node.textContent = Math.round(target * (1 - (1 - progress) ** 3));
+    if (progress < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+});
+
 const ageDays = Math.floor((Date.now() - Date.parse(`${REVIEWED_ON}T00:00:00`)) / 86_400_000);
 if (ageDays > 30) {
   const note = document.querySelector("#freshness-note");
@@ -283,3 +453,5 @@ if (ageDays > 30) {
 
 updateList();
 updateEventExamples();
+updateRebateEstimate();
+updateScrollState();

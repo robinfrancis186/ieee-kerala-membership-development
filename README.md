@@ -10,6 +10,13 @@ python3 -m http.server 5176
 
 Open `http://127.0.0.1:5176/`. Run the calculation and filter tests with `npm test`.
 
+## Design
+
+- Plain HTML, CSS, and ES modules with no build step. Colours, radii, and fonts are CSS custom properties at the top of `styles.css`.
+- Light and dark themes follow the visitor's system setting. The header toggle overrides it and stores the choice in `localStorage`.
+- Headings use Bricolage Grotesque and body text uses Plus Jakarta Sans, both loaded from Google Fonts with system-font fallbacks.
+- Funding and event lists show a short preview first (fewer on phones) with a button to show the rest.
+
 ## Data and limitations
 
 - The reviewed opportunity shortlist is a dated snapshot with official source links. Always confirm a live call's dates, eligibility, and amount on its source page.
