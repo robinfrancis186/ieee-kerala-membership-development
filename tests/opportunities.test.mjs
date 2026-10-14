@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { estimateStudentBranchRebate, filterOpportunities, opportunities } from "../opportunities.mjs";
 
 test("funding filters separate open, recurring, closed, and cycle-check items", () => {
-  assert.equal(filterOpportunities(opportunities, { category: "open" }).length, 5);
+  assert.equal(filterOpportunities(opportunities, { category: "open" }).length, 8);
   assert.ok(filterOpportunities(opportunities, { category: "recurring" }).every((item) => item.recurring));
   assert.ok(filterOpportunities(opportunities, { category: "closed" }).every((item) => item.status === "closed"));
   assert.ok(filterOpportunities(opportunities, { category: "check" }).every((item) => item.status === "check"));
@@ -13,7 +13,7 @@ test("search matches amount, eligibility, and titles after trimming case", () =>
   assert.ok(filterOpportunities(opportunities, { query: "  US$2,500  " }).some((item) => item.id === "wie-international"));
   assert.ok(filterOpportunities(opportunities, { query: "community partner" }).some((item) => item.id === "epics"));
   assert.ok(filterOpportunities(opportunities, { query: "women" }).some((item) => item.id === "wie-travel"));
-  assert.equal(filterOpportunities(opportunities, { query: "comsoc" }).length, 2);
+  assert.equal(filterOpportunities(opportunities, { query: "comsoc" }).length, 3);
   assert.equal(filterOpportunities(opportunities, { query: "not a real opportunity" }).length, 0);
 });
 

@@ -3,3 +3,7 @@ output/imagegen/
 node_modules/
 .DS_Store
 .vercel
+
+# graphify knowledge-graph outputs (generated)
+graphify-out/
+graphify-corpus/
