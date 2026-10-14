@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { estimateStudentBranchRebate, filterOpportunities, opportunities } from "../opportunities.mjs";
 
 test("funding filters separate open, recurring, closed, and cycle-check items", () => {
-  assert.equal(filterOpportunities(opportunities, { category: "open" }).length, 8);
+  assert.equal(filterOpportunities(opportunities, { category: "open" }).length, 10);
   assert.ok(filterOpportunities(opportunities, { category: "recurring" }).every((item) => item.recurring));
   assert.ok(filterOpportunities(opportunities, { category: "closed" }).every((item) => item.status === "closed"));
   assert.ok(filterOpportunities(opportunities, { category: "check" }).every((item) => item.status === "check"));
