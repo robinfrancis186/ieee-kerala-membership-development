@@ -49,7 +49,7 @@ let showAllOffers = false;
 let activeEventCategory = "all";
 
 const statusLabels = { open: "Open at last check", closed: "Closed in 2026", recurring: "Annual cycle", check: "Check next cycle" };
-const eventCategoryLabels = { "student-branch": "Student Branch", society: "Society chapter", "kerala-wide": "Kerala-wide" };
+const eventCategoryLabels = { "student-branch": "Student Branch", society: "Society chapter", "kerala-wide": "Kerala-wide", outreach: "Outreach" };
 const icon = (name) => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
 
 function logoTile(name, { small = false, fallback = true } = {}) {

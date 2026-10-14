@@ -24,7 +24,9 @@ test("logos resolve for common units and fall back to abbreviations", () => {
   assert.equal(logoFor("IEEE Computer Society Kerala Chapter").src, "/logos/computer-society.png");
   assert.equal(logoFor("IEEE Power & Energy Society").src, "/logos/pes.png");
   assert.equal(logoFor("IEEE Power Electronics Society").src, "/logos/pels.png");
-  assert.equal(logoFor("IEEE Industrial Electronics Society"), null);
+  assert.equal(logoFor("IEEE Industrial Electronics Society").src, "/logos/ies.png");
+  assert.equal(logoFor("IEEE Electronics Packaging Society").src, "/logos/eps.png");
+  assert.equal(logoFor("IEEE Nuclear & Plasma Sciences Society"), null);
   assert.equal(abbreviationFor("IEEE Power Electronics Society"), "PELS");
   assert.equal(abbreviationFor("IEEE Nuclear & Plasma Sciences Society"), "NPSS");
   assert.ok(opportunities.every((item) => logoFor(item.organization) || abbreviationFor(item.organization)));

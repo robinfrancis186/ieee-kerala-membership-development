@@ -237,7 +237,19 @@ h2 { max-width: 24ch; margin-bottom: .9rem; font-size: clamp(1.75rem, 3.2vw, 2.4
 .ladder .is-here { border-color: var(--brand); background: var(--brand-tint); }
 .ladder .is-here .ladder-level { color: var(--brand-ink); }
 .map-figure { position: sticky; top: 90px; margin: 0; padding: 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; }
+.map-frame { position: relative; }
 .map-figure img { display: block; width: 100%; height: auto; }
+.map-leaders { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.map-leaders line { stroke: #0d1b2a; stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+.map-leaders circle { fill: #fff; stroke: #0d1b2a; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.map-tags { position: absolute; inset: 0; }
+.region-tag { position: absolute; padding: .1rem .32rem; border-radius: 5px; background: rgba(255, 255, 255, .94); box-shadow: 0 1px 3px rgba(13, 27, 42, .35); color: #0d1b2a; font-family: var(--mono); font-size: .7rem; font-weight: 600; line-height: 1.2; white-space: nowrap; transform: translate(-50%, -50%); }
+.region-tag.is-home { background: #00629b; color: #fff; }
+.region-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .3rem 1rem; margin: .9rem 0 0; padding: .8rem 0 0; border-top: 1px solid #e2e7ec; list-style: none; }
+.region-legend li { display: flex; align-items: baseline; gap: .5rem; color: #3b4959; font-size: .82rem; line-height: 1.35; }
+.region-legend li span { flex: none; min-width: 2.2rem; color: #0d1b2a; font-family: var(--mono); font-size: .76rem; font-weight: 600; }
+.region-legend li.is-home { color: #00507f; font-weight: 600; }
+.region-legend li.is-home span { color: #00629b; }
 .map-figure figcaption { margin-top: .7rem; color: #4a5866; font-size: .84rem; line-height: 1.5; }
 .org-chart { padding: 1.25rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
 .org-root { width: max-content; max-width: 100%; margin: 0 auto 1.25rem; padding: .6rem 1.1rem; border-radius: var(--radius-sm); background: var(--brand-solid); color: #fff; font-weight: 650; text-align: center; }
@@ -532,6 +544,8 @@ h2 { max-width: 24ch; margin-bottom: .9rem; font-size: clamp(1.75rem, 3.2vw, 2.4
   .dues-flow, .timeline { grid-template-columns: 1fr; }
   .dues-flow li + li, .timeline-item + .timeline-item { border-top: 1px solid var(--line); border-left: 0; }
   .ladder li { grid-template-columns: 1fr; }
+  .region-tag { padding: 0 .2rem; font-size: .56rem; }
+  .region-legend { grid-template-columns: 1fr; }
   .ladder-level { grid-row: auto; margin-bottom: .2rem; }
   .catalogue-head { align-items: stretch; flex-direction: column; }
   .select-box select { width: 100%; }
