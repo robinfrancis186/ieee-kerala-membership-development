@@ -1,0 +1,6 @@
+# Keep tooling, tests, and generated outputs out of the deployed site
+graphify-out/
+graphify-corpus/
+tests/
+output/
+.env*
