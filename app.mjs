@@ -39,6 +39,7 @@ const eventPreviewCount = () => (compact.matches ? 4 : eventExamples.length);
 const cataloguePreviewCount = () => (compact.matches ? 6 : 12);
 const offerPreviewCount = () => (compact.matches ? 6 : ieeeDayOffers.length);
 const tones = ["blue", "teal", "amber", "coral"];
+const money = (amount) => `US$${amount.toLocaleString("en-US")}`;
 let activeCategory = "all";
 let showAll = false;
 let showAllEvents = false;
@@ -116,6 +117,21 @@ function renderEventExample(item, index) {
   card.querySelector(".event-organizers").textContent = item.organizers;
   const organizerLogo = logoTile(item.organizers, { small: true, fallback: false });
   if (organizerLogo) card.querySelector(".event-org").prepend(organizerLogo);
+  if (item.photo) {
+    const figure = document.createElement("figure");
+    figure.className = "event-photo";
+    const image = document.createElement("img");
+    image.src = item.photo.src;
+    image.alt = item.photo.alt;
+    image.width = item.photo.width;
+    image.height = item.photo.height;
+    image.loading = "lazy";
+    image.decoding = "async";
+    const caption = document.createElement("figcaption");
+    caption.textContent = item.photo.credit;
+    figure.append(image, caption);
+    card.querySelector(".event-org").after(figure);
+  }
   card.querySelector(".event-summary").textContent = item.summary;
   card.querySelector(".event-takeaway p").textContent = item.takeaway;
   card.querySelector(".event-tags").append(...item.categories.filter((category) => eventCategoryLabels[category]).map((category) => {

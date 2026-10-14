@@ -168,6 +168,25 @@ export const eventExamples = [
     sourceLabel: "IEEE Kerala Section report, 2018"
   },
   {
+    id: "aksc-2023",
+    title: "All Kerala Student Congress 2023",
+    edition: "Annual flagship · 17 Sep 2023",
+    organizers: "IEEE LINK and IEEE Kerala Section, at TKM Engineering College, Kollam",
+    categories: ["student-branch", "kerala-wide"],
+    format: "Statewide student congress with parallel workshops and activities",
+    summary: "More than 1,000 students attended from across Kerala. The programme paired hands-on sessions in areas such as MATLAB/Simulink, open-source software, and solar PV with technical panels, ideathons, career sessions, exhibitions, and cultural activities.",
+    takeaway: "Offer parallel paths through one flagship: practical workshops for builders, career sessions for new members, and a shared statewide experience that brings branches together.",
+    source: "https://events.vtools.ieee.org/m/399724",
+    sourceLabel: "IEEE vTools event report",
+    photo: {
+      src: "/images/events/aksc-2023.webp",
+      alt: "IEEE LINK volunteers and participants at AKSC 2023, with the event name visible on the backdrop",
+      credit: "Photo from the supplied IEEE LINK membership-development session deck",
+      width: 1080,
+      height: 532
+    }
+  },
+  {
     id: "techx-infinia-2024",
     title: "TechX Infinia: Where Imagination Meets Technology",
     edition: "International flagship · 27–29 Sep 2024",
@@ -189,7 +208,14 @@ export const eventExamples = [
     summary: "The Yearly Engineering Students Summit brought together more than 5,000 students and is described by the Section as the world's largest engineering student summit. Society chapters ran workshops, exhibitions, and challenges inside it, from IC design to aerospace.",
     takeaway: "Host a summit where every Society chapter owns a track. Members get breadth, and each chapter gets visibility and new recruits in one place.",
     source: "https://www.ieeer10.org/wp-content/uploads/2026/02/2026-IEEE-Kerala-Section-Region-10-Report-Nandan-S.pdf",
-    sourceLabel: "IEEE Kerala Section report"
+    sourceLabel: "IEEE Kerala Section report",
+    photo: {
+      src: "/images/events/yess-2025.webp",
+      alt: "YESS participants gathered beside large YESS letters at NIT Calicut",
+      credit: "Photo from the supplied WE ARE IEEE – LINK ’25 session deck",
+      width: 2048,
+      height: 1152
+    }
   },
   {
     id: "thm-2025",
