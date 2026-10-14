@@ -1,5 +1,41 @@
 export const eventExamples = [
   {
+    id: "pes-sbc-slt-meetup-2026",
+    title: "PES Kerala Student Leadership and Advisors Meet-Up",
+    edition: "Annual flagship · 26 Sep 2026",
+    organizers: "IEEE PES Kerala Chapter, IEEE PES SBC CCET, and IEEE SB CCET",
+    categories: ["student-branch", "society", "kerala-wide"],
+    format: "Statewide leadership meet-up with round tables and funding guidance",
+    summary: "About 110 students and five professionals from roughly 35 Kerala PES Student Branch Chapters met for officer-role guidance, cross-branch discussion, vTools and event-planning practice, and a session on GIEEE budgets and funding procedures.",
+    takeaway: "Combine peer exchange with practical admin, reporting, event planning, and finance sessions. Let chapter officers compare real challenges and leave with clearer next steps.",
+    source: "https://events.vtools.ieee.org/m/582458",
+    sourceLabel: "IEEE vTools event report"
+  },
+  {
+    id: "catalyst-lbscek-2026",
+    title: "CATALYST 1.0: Energy Internet and Smart Grid Series",
+    edition: "Flagship series launch · 13 Aug 2026",
+    organizers: "IEEE PES Student Branch Chapter, LBSCEK",
+    categories: ["student-branch", "society"],
+    format: "Recurring technical series with a practitioner-led opening session",
+    summary: "The LBSCEK PES Student Branch Chapter launched its flagship CATALYST series with an expert session on how electric vehicles, battery storage, and AI are reshaping the power grid. The vTools report records 130 participants.",
+    takeaway: "Give a recurring series a clear technical identity, open with a practical industry topic, and use each edition to build continuity rather than treating every talk as a one-off.",
+    source: "https://events.vtools.ieee.org/m/574564",
+    sourceLabel: "IEEE vTools event report"
+  },
+  {
+    id: "sdlp-marian-llm-2026",
+    title: "SDLP: Speech, Vision, and Large Language Models",
+    edition: "Student Development and Learning Programme · 17 Sep 2026",
+    organizers: "IEEE Student Branch, Marian Engineering College, with IEEE Kerala Section",
+    categories: ["student-branch", "kerala-wide"],
+    format: "One-hour expert session with 120 participants",
+    summary: "Marian Engineering College's Student Branch hosted a Kerala Section SDLP session with ICFOSS director Dr. Sunil T T, connecting AI foundations and neural networks to large language models, retrieval-augmented generation, and speech and vision applications.",
+    takeaway: "A focused talk can still feel useful when it links fundamentals to concrete applications, names a specific audience outcome, and leaves time for questions.",
+    source: "https://events.vtools.ieee.org/m/580958",
+    sourceLabel: "IEEE vTools event report"
+  },
+  {
     id: "akcssc-2025",
     title: "All Kerala Computer Society Students Convention",
     edition: "11th edition · 2025",

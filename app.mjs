@@ -130,6 +130,7 @@ function renderEventExample(item, index) {
 }
 
 function updateEventExamples() {
+  if (!eventGrid) return;
   const filtered = filterEventExamples(eventExamples, activeEventCategory);
   const visible = showAllEvents ? filtered : filtered.slice(0, eventPreviewCount());
   eventGrid.replaceChildren(...visible.map(renderEventExample));
@@ -142,6 +143,7 @@ function updateEventExamples() {
 }
 
 function updateList() {
+  if (!list || !search || !travelOnly) return;
   const filtered = filterOpportunities(opportunities, { category: activeCategory, query: search.value, travelOnly: travelOnly.checked });
   const visible = showAll ? filtered : filtered.slice(0, previewCount());
   list.replaceChildren(...visible.map(renderOpportunity));
@@ -169,6 +171,7 @@ function renderCatalogueRow(item) {
 }
 
 function updateCatalogue() {
+  if (!catalogueList || !catalogueUnit) return;
   const filtered = filterCatalogue(catalogue, { type: activeCatalogueType, unit: catalogueUnit.value, query: search.value });
   const visible = showAllCatalogue ? filtered : filtered.slice(0, cataloguePreviewCount());
   catalogueList.replaceChildren(...visible.map(renderCatalogueRow));
@@ -212,6 +215,7 @@ function renderOffer(offer, index) {
 }
 
 function updateOffers() {
+  if (!offerGrid) return;
   const filtered = filterOffers(ieeeDayOffers, activeOfferFilter);
   const visible = showAllOffers ? filtered : filtered.slice(0, offerPreviewCount());
   offerGrid.replaceChildren(...visible.map(renderOffer));
@@ -231,9 +235,6 @@ const rebateBreakdown = document.querySelector("#rebate-breakdown");
 const rebateResult = document.querySelector("#rebate-result");
 const readiness = ["#plan-submitted", "#activities-reported", "#officers-current"].map((selector) => document.querySelector(selector));
 const readinessMeter = document.querySelector("#readiness-meter");
-const coreDues = document.querySelector("#core-dues");
-const poolResult = document.querySelector("#pool-result");
-const money = (amount) => `US$${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 function showRebate(state, message, estimate = null, members = 0) {
   rebateOutput.dataset.state = state;
@@ -265,25 +266,10 @@ function updateRebateEstimate() {
   }
 }
 
-function updatePoolEstimate() {
-  if (coreDues.value === "") {
-    poolResult.dataset.state = "empty";
-    poolResult.textContent = "Add core dues to see the illustrative 12% MGA pool share.";
-    return;
-  }
-  const dues = Number(coreDues.value);
-  if (!Number.isFinite(dues) || dues < 0) {
-    poolResult.dataset.state = "error";
-    poolResult.textContent = "Enter a non-negative core IEEE dues amount.";
-    return;
-  }
-  poolResult.dataset.state = "filled";
-  poolResult.textContent = `Illustrative 12% aggregate MGA allocation: ${money(dues * .12)}. This is not the amount paid to one Branch, Section, Council, or Region.`;
+if (branchMembers && readinessMeter && readiness.every(Boolean)) {
+  branchMembers.addEventListener("input", updateRebateEstimate);
+  readiness.forEach((checkbox) => checkbox.addEventListener("change", updateRebateEstimate));
 }
-
-branchMembers.addEventListener("input", updateRebateEstimate);
-readiness.forEach((checkbox) => checkbox.addEventListener("change", updateRebateEstimate));
-coreDues.addEventListener("input", updatePoolEstimate);
 
 function addFilterCount(button, total) {
   const badge = document.createElement("span");
@@ -304,17 +290,17 @@ buttons.forEach((button) => {
     updateList();
   });
 });
-search.addEventListener("input", () => {
+search?.addEventListener("input", () => {
   updateList();
   updateCatalogue();
 });
-travelOnly.addEventListener("change", updateList);
-moreButton.addEventListener("click", () => {
+travelOnly?.addEventListener("change", updateList);
+moreButton?.addEventListener("click", () => {
   showAll = !showAll;
   updateList();
   if (!showAll) document.querySelector(".funding-tools").scrollIntoView({ block: "start" });
 });
-moreEventsButton.addEventListener("click", () => {
+moreEventsButton?.addEventListener("click", () => {
   showAllEvents = !showAllEvents;
   updateEventExamples();
   if (!showAllEvents) document.querySelector(".events-tools").scrollIntoView({ block: "start" });
@@ -327,7 +313,7 @@ compact.addEventListener("change", () => {
 });
 
 const catalogueTypeNames = [...new Set(catalogue.map((item) => item.type))].sort();
-catalogueTypes.append(...["all", ...catalogueTypeNames].map((type) => {
+catalogueTypes?.append(...["all", ...catalogueTypeNames].map((type) => {
   const button = document.createElement("button");
   button.className = `filter-button${type === "all" ? " is-active" : ""}`;
   button.type = "button";
@@ -337,14 +323,14 @@ catalogueTypes.append(...["all", ...catalogueTypeNames].map((type) => {
   addFilterCount(button, filterCatalogue(catalogue, { type }).length);
   return button;
 }));
-catalogueUnit.append(...[...new Set(catalogue.map((item) => item.unit))].map((unit) => {
+catalogueUnit?.append(...[...new Set(catalogue.map((item) => item.unit))].map((unit) => {
   const option = document.createElement("option");
   option.value = unit;
   option.textContent = `${unit} (${filterCatalogue(catalogue, { unit }).length})`;
   return option;
 }));
-document.querySelector("#catalogue-total").textContent = catalogue.length;
-catalogueTypes.addEventListener("click", (event) => {
+document.querySelector("#catalogue-total")?.replaceChildren(String(catalogue.length));
+catalogueTypes?.addEventListener("click", (event) => {
   const button = event.target.closest("[data-catalogue-type]");
   if (!button) return;
   activeCatalogueType = button.dataset.catalogueType;
@@ -355,8 +341,8 @@ catalogueTypes.addEventListener("click", (event) => {
   });
   updateCatalogue();
 });
-catalogueUnit.addEventListener("change", updateCatalogue);
-moreCatalogueButton.addEventListener("click", () => {
+catalogueUnit?.addEventListener("change", updateCatalogue);
+moreCatalogueButton?.addEventListener("click", () => {
   showAllCatalogue = !showAllCatalogue;
   updateCatalogue();
   if (!showAllCatalogue) document.querySelector("#catalogue").scrollIntoView({ block: "start" });
@@ -374,12 +360,12 @@ offerFilterButtons.forEach((button) => {
     updateOffers();
   });
 });
-moreOffersButton.addEventListener("click", () => {
+moreOffersButton?.addEventListener("click", () => {
   showAllOffers = !showAllOffers;
   updateOffers();
   if (!showAllOffers) document.querySelector("#ieee-day .events-tools").scrollIntoView({ block: "start" });
 });
-offerGrid.addEventListener("click", async (event) => {
+offerGrid?.addEventListener("click", async (event) => {
   const button = event.target.closest(".promo-code");
   if (!button) return;
   try {
@@ -402,15 +388,20 @@ offerGrid.addEventListener("click", async (event) => {
 const offerStatus = ieeeDayStatus();
 const offerSection = document.querySelector("#ieee-day");
 const dayCount = `${offerStatus.daysLeft} day${offerStatus.daysLeft === 1 ? "" : "s"} left`;
-offerSection.dataset.state = offerStatus.state;
-document.querySelector("#offer-window-detail").textContent = {
+if (offerSection) offerSection.dataset.state = offerStatus.state;
+const offerWindowDetail = document.querySelector("#offer-window-detail");
+if (offerWindowDetail) offerWindowDetail.textContent = {
   upcoming: "Codes start working when the offer window opens.",
   active: `${dayCount} to use these codes.`,
   ended: "This offer window has closed. The codes are kept here for reference and may no longer work."
 }[offerStatus.state];
 if (offerStatus.state === "active") {
-  document.querySelector("#announce-text").textContent = `IEEE Day ${IEEE_DAY.year}: ${ieeeDayOffers.length} Society membership offers, ${dayCount}`;
-  document.querySelector("#announce").hidden = false;
+  const announceText = document.querySelector("#announce-text");
+  const announce = document.querySelector("#announce");
+  if (announceText && announce) {
+    announceText.textContent = `IEEE Day ${IEEE_DAY.year}: ${ieeeDayOffers.length} Society membership offers, ${dayCount}`;
+    announce.hidden = false;
+  }
 }
 
 eventFilterButtons.forEach((button) => {
@@ -429,13 +420,13 @@ eventFilterButtons.forEach((button) => {
 menuButton.addEventListener("click", () => {
   const expanded = menuButton.getAttribute("aria-expanded") === "true";
   menuButton.setAttribute("aria-expanded", String(!expanded));
-  menuButton.querySelector(".sr-only").textContent = expanded ? "Open chapter list" : "Close chapter list";
+  menuButton.querySelector(".sr-only").textContent = expanded ? "Open navigation" : "Close navigation";
   menu.classList.toggle("is-open", !expanded);
 });
 menu.addEventListener("click", (event) => {
   if (event.target.closest("a")) {
     menuButton.setAttribute("aria-expanded", "false");
-    menuButton.querySelector(".sr-only").textContent = "Open chapter list";
+    menuButton.querySelector(".sr-only").textContent = "Open navigation";
     menu.classList.remove("is-open");
   }
 });
@@ -474,7 +465,7 @@ systemDark.addEventListener("change", (event) => {
 });
 applyTheme(root.dataset.theme === "dark" ? "dark" : "light");
 
-const chapterLinks = [...document.querySelectorAll(".chapter-link")];
+const chapterLinks = [...document.querySelectorAll(".chapter-link")].filter((link) => link.hash && link.pathname === location.pathname);
 const chapterSections = [...new Set(chapterLinks.map((link) => link.hash))].map((hash) => document.querySelector(hash)).filter(Boolean);
 let scrollQueued = false;
 
@@ -518,13 +509,15 @@ document.querySelectorAll("[data-stat]").forEach((node) => {
 const ageDays = Math.floor((Date.now() - Date.parse(`${REVIEWED_ON}T00:00:00`)) / 86_400_000);
 if (ageDays > 30) {
   const note = document.querySelector("#freshness-note");
-  note.hidden = false;
-  note.textContent = `This funding snapshot is ${ageDays} days old. Treat status labels as historical and confirm the current call on its official page.`;
+  if (note) {
+    note.hidden = false;
+    note.textContent = `This funding snapshot is ${ageDays} days old. Treat status labels as historical and confirm the current call on its official page.`;
+  }
 }
 
 updateList();
 updateEventExamples();
 updateCatalogue();
 updateOffers();
-updateRebateEstimate();
+if (branchMembers) updateRebateEstimate();
 updateScrollState();

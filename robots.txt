@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ieee-kerala-membership-development.vercel.app/sitemap.xml
